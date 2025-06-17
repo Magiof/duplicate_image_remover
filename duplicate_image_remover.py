@@ -127,9 +127,14 @@ class DuplicateImageRemover:
         comparison_start = time.time()
         
         if hasattr(self.hasher, 'find_duplicates') and self.method_name != 'cnn':
+            # threshold가 정수인지 확인하고 범위 체크
+            threshold_int = int(self.threshold)
+            if threshold_int < 0 or threshold_int > 64:
+                raise ValueError(f"threshold는 0-64 사이의 정수여야 합니다. 현재 값: {threshold_int}")
+            
             duplicates = self.hasher.find_duplicates(
                 encoding_map=encodings, 
-                max_distance_threshold=self.threshold
+                max_distance_threshold=threshold_int
             )
         else:
             duplicates = self.hasher.find_duplicates(encoding_map=encodings)
@@ -464,7 +469,7 @@ def main():
                        help='중복 이미지를 실제로 삭제 (기본값: False, 정보만 출력)')
     parser.add_argument('--method', choices=['phash', 'dhash', 'ahash', 'whash', 'cnn'],
                        default='phash', help='중복 탐지 방법 (기본값: phash)')
-    parser.add_argument('--threshold', type=float, default=3,
+    parser.add_argument('--threshold', type=int, default=3,
                        help='유사도 임계값 (낮을수록 더 엄격, 기본값: 3 = 95%% 유사도)')
     parser.add_argument('--backup', type=str,
                        help='삭제 전 백업할 디렉토리 (--delete와 함께 사용)')
